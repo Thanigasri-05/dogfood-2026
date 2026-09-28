@@ -1,18 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
+import "./App.css"
 
-const API = "http://127.0.0.1:8000";
+const API = "http://127.0.0.1:8000"
+
+/* =========================================================
+   AUTH HELPERS
+========================================================= */
+
+function getToken() {
+  return localStorage.getItem("token")
+}
+
+function authHeaders() {
+  return {
+    Authorization: `Bearer ${getToken()}`,
+    "Content-Type": "application/json",
+  }
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 function Login({ onLogin }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState("judge@example.com")
+  const [password, setPassword] = useState("string")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    setLoading(true);
-    setError("");
+  async function handleLogin(e) {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
 
     try {
       const response = await fetch(`${API}/auth/login`, {
@@ -24,773 +43,1695 @@ function Login({ onLogin }) {
           email,
           password,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok || data.error) {
-        setError(data.error || "Login failed");
-        return;
+        setError(data.error || "Login failed")
+        return
       }
 
-      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("token", data.access_token)
+
       localStorage.setItem(
         "user",
         JSON.stringify({
-          user_id: data.user_id,
+          id: data.user_id,
           name: data.name,
           email: data.email,
           role: data.role,
         })
-      );
+      )
 
-      onLogin(data);
-    } catch (err) {
-      setError("Cannot connect to backend.");
+      onLogin(data)
+    } catch {
+      setError("Unable to connect to backend")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="brand">
-          <div className="brand-mark">D</div>
-          <div>
-            <h1>Dogfood 2026</h1>
-            <p>Hackathon Management Platform</p>
+      <div className="login-shell">
+
+        <section className="login-intro">
+
+          <div className="login-intro-brand">
+            <div className="brand-logo">D</div>
+
+            <div>
+              <h2>Dogfood 2026</h2>
+              <p>Hackathon Management Platform</p>
+            </div>
           </div>
-        </div>
 
-        <h2>Welcome back</h2>
-        <p className="muted">Sign in to continue to your dashboard.</p>
+          <div className="login-intro-content">
 
-        <form onSubmit={handleLogin}>
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+            <p className="login-eyebrow">
+              HACKATHON PLATFORM
+            </p>
 
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+            <h1>
+              Build.
+              <br />
+              Submit.
+              <br />
+              <span>Win.</span>
+            </h1>
 
-          {error && <div className="error-box">{error}</div>}
+            <p>
+              One platform to manage events, teams,
+              submissions, judging and results.
+            </p>
 
-          <button className="primary-button" type="submit" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
+            <div className="login-features">
+
+              <div className="login-feature">
+                <span>01</span>
+
+                <div>
+                  <strong>Manage Teams</strong>
+                  <p>
+                    Create and manage your hackathon team.
+                  </p>
+                </div>
+              </div>
+
+              <div className="login-feature">
+                <span>02</span>
+
+                <div>
+                  <strong>Submit Projects</strong>
+                  <p>
+                    Submit your project and showcase it.
+                  </p>
+                </div>
+              </div>
+
+              <div className="login-feature">
+                <span>03</span>
+
+                <div>
+                  <strong>Judge & Score</strong>
+                  <p>
+                    Evaluate projects using weighted rubrics.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div className="login-footer">
+            Dogfood 2026 · Hackathon Management Platform
+          </div>
+
+        </section>
+
+        <section className="login-form-area">
+
+          <div className="login-card">
+
+            <div className="mobile-brand">
+
+              <div className="brand-logo">D</div>
+
+              <div>
+                <h2 className="brand-title">
+                  Dogfood 2026
+                </h2>
+
+                <p className="brand-subtitle">
+                  Hackathon Management Platform
+                </p>
+              </div>
+
+            </div>
+
+            <div className="login-heading">
+
+              <p className="login-card-eyebrow">
+                WELCOME
+              </p>
+
+              <h1>Welcome back</h1>
+
+              <p className="login-description">
+                Sign in to continue to your dashboard.
+              </p>
+
+            </div>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin}>
+
+              <div className="form-group">
+
+                <label>Email address</label>
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
+                  placeholder="you@example.com"
+                  required
+                />
+
+              </div>
+
+              <div className="form-group">
+
+                <label>Password</label>
+
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
+                  placeholder="Enter your password"
+                  required
+                />
+
+              </div>
+
+              <button
+                className="login-button"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  "Signing in..."
+                ) : (
+                  <>
+                    Sign in
+                    <span className="button-arrow">
+                      →
+                    </span>
+                  </>
+                )}
+              </button>
+
+            </form>
+
+            <div className="login-note">
+              <span className="status-dot"></span>
+              Hackathon platform is online
+            </div>
+
+          </div>
+
+        </section>
+
       </div>
     </div>
-  );
+  )
 }
 
-function Navbar({ user, page, setPage, onLogout }) {
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+function Navbar({
+  user,
+  page,
+  setPage,
+  onLogout,
+}) {
   return (
     <nav className="navbar">
-      <div className="nav-brand">
-        <div className="brand-mark small">D</div>
-        <span>Dogfood 2026</span>
-      </div>
 
-      <div className="nav-links">
+      <div className="navbar-left">
+
+        <div className="navbar-brand">
+
+          <div className="navbar-logo">
+            D
+          </div>
+
+          <span>
+            Dogfood 2026
+          </span>
+
+        </div>
+
         <button
-          className={page === "dashboard" ? "nav-link active" : "nav-link"}
-          onClick={() => setPage("dashboard")}
+          className={`nav-link ${
+            page === "dashboard"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setPage("dashboard")
+          }
         >
           Dashboard
         </button>
 
         <button
-          className={page === "gallery" ? "nav-link active" : "nav-link"}
-          onClick={() => setPage("gallery")}
+          className={`nav-link ${
+            page === "gallery"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            setPage("gallery")
+          }
         >
           Public Gallery
         </button>
+
       </div>
 
-      <div className="nav-user">
-        <div>
-          <strong>{user.name}</strong>
-          <span>{user.role}</span>
+      <div className="navbar-right">
+
+        <div className="nav-user">
+
+          <span className="nav-user-name">
+            {user?.name}
+          </span>
+
+          <span className="nav-user-role">
+            {user?.role}
+          </span>
+
         </div>
 
-        <button className="logout-button" onClick={onLogout}>
+        <button
+          className="logout-button"
+          onClick={onLogout}
+        >
           Logout
         </button>
+
       </div>
+
     </nav>
-  );
+  )
 }
+
+/* =========================================================
+   PUBLIC GALLERY
+========================================================= */
 
 function PublicGallery() {
-  const [projects, setProjects] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [projects, setProjects] = useState([])
+  const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(true)
 
-  const loadGallery = async () => {
-    setLoading(true);
-    setError("");
+  async function loadProjects() {
+    setLoading(true)
 
     try {
-      const response = await fetch(`${API}/gallery/`);
+      const response = await fetch(
+        `${API}/gallery/`
+      )
 
-      if (!response.ok) {
-        throw new Error("Failed to load gallery");
+      const data = await response.json()
+
+      if (Array.isArray(data)) {
+        setProjects(data)
+      } else {
+        setProjects([])
+      }
+    } catch {
+      setProjects([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadProjects()
+  }, [])
+
+  const filteredProjects = projects.filter(
+    (project) => {
+      const query = search
+        .trim()
+        .toLowerCase()
+
+      if (!query) {
+        return true
       }
 
-      const data = await response.json();
-      setProjects(data);
-    } catch (err) {
-      setError("Unable to load public gallery.");
-    } finally {
-      setLoading(false);
+      return (
+        project.project_name
+          ?.toLowerCase()
+          .includes(query) ||
+
+        project.description
+          ?.toLowerCase()
+          .includes(query) ||
+
+        project.team_name
+          ?.toLowerCase()
+          .includes(query) ||
+
+        project.track_name
+          ?.toLowerCase()
+          .includes(query)
+      )
     }
-  };
-
-  useEffect(() => {
-    loadGallery();
-  }, []);
-
-  const filteredProjects = projects.filter((project) => {
-    const text = `
-      ${project.project_name}
-      ${project.description}
-      ${project.team_name}
-      ${project.track_name}
-    `.toLowerCase();
-
-    return text.includes(search.toLowerCase());
-  });
+  )
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">PUBLIC</p>
-          <h1>Hackathon Gallery</h1>
-          <p className="muted">
-            Explore projects submitted to Hackathon 2026.
-          </p>
-        </div>
+    <main className="page gallery-page">
 
-        <button className="secondary-button" onClick={loadGallery}>
-          Refresh
-        </button>
-      </div>
+      <div className="page-container gallery-container">
 
-      <div className="gallery-search">
-        <input
-          type="text"
-          placeholder="Search projects, teams, tracks..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+        {/* =========================
+            HERO
+        ========================= */}
 
-      {loading && <div className="empty-card">Loading projects...</div>}
+        <div className="gallery-hero">
 
-      {error && <div className="error-box">{error}</div>}
+          <div className="gallery-heading">
 
-      {!loading && !error && filteredProjects.length === 0 && (
-        <div className="empty-card">
-          No projects found.
-        </div>
-      )}
+            <p className="page-eyebrow">
+              Public
+            </p>
 
-      {!loading && !error && filteredProjects.length > 0 && (
-        <div className="gallery-grid">
-          {filteredProjects.map((project) => (
-            <div className="project-card" key={project.submission_id}>
-              <div className="project-card-top">
-                <span className="track-badge">
-                  {project.track_name}
-                </span>
+            <h1 className="page-title">
+              Hackathon Gallery
+            </h1>
 
-                <span className="submission-id">
-                  #{project.submission_id}
-                </span>
-              </div>
+            <p className="page-description">
+              Explore projects submitted to
+              Hackathon 2026.
+            </p>
 
-              <h2>{project.project_name}</h2>
-
-              <p className="project-description">
-                {project.description}
-              </p>
-
-              <div className="project-meta">
-                <div>
-                  <span>Team</span>
-                  <strong>{project.team_name}</strong>
-                </div>
-
-                <div>
-                  <span>Track</span>
-                  <strong>{project.track_name}</strong>
-                </div>
-              </div>
-
-              <div className="project-actions">
-                {project.repository_url && (
-                  <a
-                    href={project.repository_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="secondary-button"
-                  >
-                    Repository ↗
-                  </a>
-                )}
-
-                {project.demo_url && (
-                  <a
-                    href={project.demo_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="primary-button link-button"
-                  >
-                    Live Demo ↗
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ParticipantDashboard({ token }) {
-  const [teams, setTeams] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadData = async () => {
-    setLoading(true);
-
-    try {
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      const [teamsResponse, submissionsResponse] = await Promise.all([
-        fetch(`${API}/teams/my`, { headers }),
-        fetch(`${API}/submissions/my`, { headers }),
-      ]);
-
-      const teamsData = await teamsResponse.json();
-      const submissionsData = await submissionsResponse.json();
-
-      setTeams(Array.isArray(teamsData) ? teamsData : []);
-      setSubmissions(
-        Array.isArray(submissionsData) ? submissionsData : []
-      );
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const currentTeam = teams.length > 0 ? teams[0] : null;
-  const currentSubmission =
-    submissions.length > 0 ? submissions[0] : null;
-
-  return (
-    <div className="page-container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">PARTICIPANT</p>
-          <h1>Hackathon Dashboard</h1>
-          <p className="muted">
-            Manage your team and submissions.
-          </p>
-        </div>
-
-        <button className="secondary-button" onClick={loadData}>
-          Refresh
-        </button>
-      </div>
-
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span>Teams</span>
-          <strong>{loading ? "..." : teams.length}</strong>
-        </div>
-
-        <div className="stat-card">
-          <span>Submissions</span>
-          <strong>{loading ? "..." : submissions.length}</strong>
-        </div>
-
-        <div className="stat-card">
-          <span>Event</span>
-          <strong>Hackathon 2026</strong>
-        </div>
-      </div>
-
-      <div className="dashboard-grid">
-        <div className="content-card">
-          <div className="card-header">
-            <div>
-              <p className="eyebrow">TEAM</p>
-              <h2>Current Team</h2>
-            </div>
           </div>
 
-          {currentTeam ? (
-            <div className="detail-block">
-              <h3>{currentTeam.name}</h3>
-              <p>
-                Team ID: <strong>#{currentTeam.id}</strong>
-              </p>
-            </div>
-          ) : (
-            <div className="empty-card">
-              You are not part of a team yet.
-            </div>
-          )}
+          <button
+            className="refresh-button"
+            onClick={loadProjects}
+            disabled={loading}
+          >
+            {loading
+              ? "Refreshing..."
+              : "Refresh"}
+          </button>
+
         </div>
 
-        <div className="content-card">
-          <div className="card-header">
-            <div>
-              <p className="eyebrow">SUBMISSION</p>
-              <h2>Current Submission</h2>
-            </div>
-          </div>
+        {/* =========================
+            SEARCH
+        ========================= */}
 
-          {currentSubmission ? (
-            <div className="detail-block">
-              <h3>{currentSubmission.project_name}</h3>
-              <p>{currentSubmission.description}</p>
+        <div className="gallery-toolbar">
 
-              <span className="status-badge">
-                {currentSubmission.status || "submitted"}
-              </span>
-            </div>
-          ) : (
-            <div className="empty-card">
-              No submission found.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+          <div className="gallery-search-wrap">
 
-function JudgeDashboard({ token }) {
-  const [assignments, setAssignments] = useState([]);
-  const [rubric, setRubric] = useState(null);
-  const [scores, setScores] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-
-  const loadData = async () => {
-    setLoading(true);
-
-    try {
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      const assignmentsResponse = await fetch(
-        `${API}/judging/assignments/my`,
-        { headers }
-      );
-
-      const assignmentsData = await assignmentsResponse.json();
-      setAssignments(
-        Array.isArray(assignmentsData) ? assignmentsData : []
-      );
-
-      const rubricResponse = await fetch(
-        `${API}/judging/rubrics/1`,
-        { headers }
-      );
-
-      const rubricData = await rubricResponse.json();
-      setRubric(rubricData);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const handleScoreChange = (criterionId, value) => {
-    setScores((previous) => ({
-      ...previous,
-      [criterionId]: value,
-    }));
-  };
-
-  const submitScores = async () => {
-    setMessage("");
-
-    try {
-      const criteria = rubric?.criteria || [];
-
-      for (const criterion of criteria) {
-        const value = Number(scores[criterion.id]);
-
-        if (Number.isNaN(value)) {
-          setMessage("Please enter all scores.");
-          return;
-        }
-
-        const response = await fetch(`${API}/judging/score`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            submission_id: 1,
-            criterion_id: criterion.id,
-            score: value,
-            comment: "",
-          }),
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.detail || "Score submission failed");
-        }
-      }
-
-      setMessage("Scores submitted successfully ✓");
-    } catch (error) {
-      setMessage(error.message || "Failed to submit scores.");
-    }
-  };
-
-  return (
-    <div className="page-container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">JUDGE</p>
-          <h1>Judge Dashboard</h1>
-          <p className="muted">
-            Review your assigned hackathon submissions.
-          </p>
-        </div>
-
-        <button className="secondary-button" onClick={loadData}>
-          Refresh
-        </button>
-      </div>
-
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span>Assignments</span>
-          <strong>{loading ? "..." : assignments.length}</strong>
-        </div>
-
-        <div className="stat-card">
-          <span>Criteria</span>
-          <strong>{rubric?.criteria?.length || 0}</strong>
-        </div>
-
-        <div className="stat-card">
-          <span>Event</span>
-          <strong>Hackathon 2026</strong>
-        </div>
-      </div>
-
-      <div className="content-card">
-        <div className="card-header">
-          <div>
-            <p className="eyebrow">SCORING</p>
-            <h2>AI Hackathon Project</h2>
-          </div>
-        </div>
-
-        {rubric?.criteria?.map((criterion) => (
-          <div className="criterion-row" key={criterion.id}>
-            <div>
-              <strong>{criterion.name}</strong>
-              <p>
-                Weight: {criterion.weight}% · Max: {criterion.max_score}
-              </p>
-            </div>
+            <span
+              className="gallery-search-icon"
+              aria-hidden="true"
+            >
+              ⌕
+            </span>
 
             <input
-              type="number"
-              min="0"
-              max={criterion.max_score}
-              step="0.1"
-              placeholder="Score"
-              value={scores[criterion.id] || ""}
+              className="gallery-search"
+              type="text"
+              placeholder="Search projects, teams, or tracks..."
+              value={search}
               onChange={(e) =>
-                handleScoreChange(criterion.id, e.target.value)
+                setSearch(e.target.value)
               }
+              aria-label="Search projects, teams, or tracks"
             />
-          </div>
-        ))}
 
-        {message && (
-          <div
-            className={
-              message.includes("successfully")
-                ? "success-box"
-                : "error-box"
-            }
-          >
-            {message}
+            {search && (
+              <button
+                type="button"
+                className="gallery-clear"
+                onClick={() =>
+                  setSearch("")
+                }
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+
+          </div>
+
+        </div>
+
+        {/* =========================
+            RESULT COUNT
+        ========================= */}
+
+        <div className="gallery-result-count">
+
+          <strong>
+            {filteredProjects.length}
+          </strong>
+
+          {" "}
+
+          project
+          {filteredProjects.length === 1
+            ? ""
+            : "s"}
+
+        </div>
+
+        {/* =========================
+            LOADING
+        ========================= */}
+
+        {loading && (
+          <div className="gallery-state-card">
+
+            <div className="gallery-state-icon">
+              ◌
+            </div>
+
+            <div>
+              <div className="gallery-state-title">
+                Loading projects
+              </div>
+
+              <div className="gallery-state-text">
+                Fetching the latest submissions...
+              </div>
+            </div>
+
           </div>
         )}
 
-        <button className="primary-button" onClick={submitScores}>
-          Submit Scores
-        </button>
+        {/* =========================
+            EMPTY STATE
+        ========================= */}
+
+        {!loading &&
+          filteredProjects.length === 0 && (
+            <div className="gallery-state-card">
+
+              <div className="gallery-state-icon">
+                ?
+              </div>
+
+              <div>
+
+                <div className="gallery-state-title">
+                  No projects found
+                </div>
+
+                <div className="gallery-state-text">
+                  Try a different project name,
+                  team, or track.
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+        {/* =========================
+            PROJECTS
+        ========================= */}
+
+        {!loading &&
+          filteredProjects.length > 0 && (
+            <div className="gallery-grid">
+
+              {filteredProjects.map(
+                (project) => (
+                  <article
+                    className="project-card"
+                    key={
+                      project.submission_id
+                    }
+                  >
+
+                    {/* CARD HEADER */}
+
+                    <div className="project-card-header">
+
+                      <div className="project-track-group">
+
+                        <span className="track-badge">
+                          {project.track_name ||
+                            "AI"}
+                        </span>
+
+                        <span className="project-number">
+                          Submission #
+                          {project.submission_id}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                    {/* CARD BODY */}
+
+                    <div className="project-card-body">
+
+                      <h3>
+                        {project.project_name ||
+                          "Untitled Project"}
+                      </h3>
+
+                      <p className="project-description">
+                        {project.description ||
+                          "No project description provided."}
+                      </p>
+
+                      {/* PROJECT INFORMATION */}
+
+                      <div className="project-info-grid">
+
+                        <div className="project-info-item">
+
+                          <span className="meta-label">
+                            Team
+                          </span>
+
+                          <span className="meta-value">
+                            {project.team_name ||
+                              "Unknown team"}
+                          </span>
+
+                        </div>
+
+                        <div className="project-info-item">
+
+                          <span className="meta-label">
+                            Track
+                          </span>
+
+                          <span className="meta-value">
+                            {project.track_name ||
+                              "Unknown track"}
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    {/* CARD FOOTER */}
+
+                    {(project.repository_url ||
+                      project.demo_url) && (
+                      <div className="project-actions">
+
+                        {project.repository_url && (
+                          <a
+                            className="repo-link"
+                            href={
+                              project.repository_url
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Repository
+                            <span>↗</span>
+                          </a>
+                        )}
+
+                        {project.demo_url && (
+                          <a
+                            className="demo-link"
+                            href={
+                              project.demo_url
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Live Demo
+                            <span>↗</span>
+                          </a>
+                        )}
+
+                      </div>
+                    )}
+
+                  </article>
+                )
+              )}
+
+            </div>
+          )}
+
       </div>
-    </div>
-  );
+    </main>
+  )
 }
 
-function OrganizerDashboard({ token }) {
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [loading, setLoading] = useState(false);
+/* =========================================================
+   PARTICIPANT DASHBOARD
+========================================================= */
 
-  const loadLeaderboard = async () => {
-    setLoading(true);
+function ParticipantDashboard() {
+  const [teams, setTeams] = useState([])
+  const [submissions, setSubmissions] =
+    useState([])
+  const [loading, setLoading] =
+    useState(true)
+
+  async function loadData() {
+    setLoading(true)
+
+    try {
+      const [
+        teamsResponse,
+        submissionsResponse,
+      ] = await Promise.all([
+        fetch(`${API}/teams/my`, {
+          headers: authHeaders(),
+        }),
+        fetch(`${API}/submissions/my`, {
+          headers: authHeaders(),
+        }),
+      ])
+
+      const teamsData =
+        await teamsResponse.json()
+
+      const submissionsData =
+        await submissionsResponse.json()
+
+      setTeams(
+        Array.isArray(teamsData)
+          ? teamsData
+          : []
+      )
+
+      setSubmissions(
+        Array.isArray(submissionsData)
+          ? submissionsData
+          : []
+      )
+    } catch {
+      setTeams([])
+      setSubmissions([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const currentTeam = teams[0]
+
+  return (
+    <main className="page">
+
+      <div className="page-container">
+
+        <div className="page-header">
+
+          <div>
+
+            <p className="page-eyebrow">
+              Participant
+            </p>
+
+            <h1 className="page-title">
+              Dashboard
+            </h1>
+
+            <p className="page-description">
+              Manage your hackathon team
+              and submissions.
+            </p>
+
+          </div>
+
+          <button
+            className="refresh-button"
+            onClick={loadData}
+          >
+            Refresh
+          </button>
+
+        </div>
+
+        <div className="stats-grid">
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Teams
+            </div>
+
+            <div className="stat-value">
+              {loading
+                ? "—"
+                : teams.length}
+            </div>
+
+          </div>
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Submissions
+            </div>
+
+            <div className="stat-value">
+              {loading
+                ? "—"
+                : submissions.length}
+            </div>
+
+          </div>
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Status
+            </div>
+
+            <div className="stat-value">
+              Active
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="content-card">
+
+          <h2>
+            Current Team
+          </h2>
+
+          {currentTeam ? (
+            <>
+              <h3>
+                {currentTeam.name}
+              </h3>
+
+              <p>
+                Team ID: {currentTeam.id}
+              </p>
+            </>
+          ) : (
+            <p>
+              No team found.
+            </p>
+          )}
+
+        </div>
+
+        <div
+          className="content-card"
+          style={{
+            marginTop: "20px",
+          }}
+        >
+
+          <h2>
+            My Submissions
+          </h2>
+
+          {submissions.length === 0 ? (
+            <p>
+              No submissions found.
+            </p>
+          ) : (
+            <div className="table-wrapper">
+
+              <table className="data-table">
+
+                <thead>
+                  <tr>
+                    <th>
+                      Project
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      Track
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {submissions.map(
+                    (submission) => (
+                      <tr
+                        key={submission.id}
+                      >
+
+                        <td>
+                          {
+                            submission.project_name
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            submission.status
+                          }
+                        </td>
+
+                        <td>
+                          {
+                            submission.track_id
+                          }
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+    </main>
+  )
+}
+
+/* =========================================================
+   JUDGE DASHBOARD
+========================================================= */
+
+function JudgeDashboard() {
+  const [assignments, setAssignments] =
+    useState([])
+
+  const [rubric, setRubric] =
+    useState(null)
+
+  const [scores, setScores] =
+    useState({})
+
+  const [comments, setComments] =
+    useState({})
+
+  const [message, setMessage] =
+    useState("")
+
+  const [loading, setLoading] =
+    useState(true)
+
+  const [submitting, setSubmitting] =
+    useState(false)
+
+  async function loadData() {
+    setLoading(true)
+    setMessage("")
+
+    try {
+      const [
+        assignmentsResponse,
+        rubricResponse,
+      ] = await Promise.all([
+        fetch(
+          `${API}/judging/assignments/my`,
+          {
+            headers: authHeaders(),
+          }
+        ),
+
+        fetch(
+          `${API}/judging/rubrics/1`,
+          {
+            headers: authHeaders(),
+          }
+        ),
+      ])
+
+      const assignmentsData =
+        await assignmentsResponse.json()
+
+      const rubricData =
+        await rubricResponse.json()
+
+      setAssignments(
+        Array.isArray(assignmentsData)
+          ? assignmentsData
+          : []
+      )
+
+      setRubric(rubricData)
+    } catch {
+      setAssignments([])
+      setRubric(null)
+
+      setMessage(
+        "Unable to load judging data"
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  function updateScore(
+    criterionId,
+    value
+  ) {
+    setScores((current) => ({
+      ...current,
+      [criterionId]: value,
+    }))
+  }
+
+  function updateComment(
+    criterionId,
+    value
+  ) {
+    setComments((current) => ({
+      ...current,
+      [criterionId]: value,
+    }))
+  }
+
+  async function submitScores(e) {
+    e.preventDefault()
+    setMessage("")
+
+    if (!rubric?.criteria?.length) {
+      setMessage(
+        "No judging criteria available."
+      )
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      for (const criterion of rubric.criteria) {
+        const score =
+          scores[criterion.id]
+
+        if (
+          score === undefined ||
+          score === ""
+        ) {
+          continue
+        }
+
+        const response = await fetch(
+          `${API}/judging/score`,
+          {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({
+              submission_id: 1,
+              criterion_id: criterion.id,
+              score: Number(score),
+              comment:
+                comments[criterion.id] ||
+                null,
+            }),
+          }
+        )
+
+        const data =
+          await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.detail ||
+              "Score submission failed"
+          )
+        }
+      }
+
+      setMessage(
+        "Scores submitted successfully ✓"
+      )
+    } catch (error) {
+      setMessage(
+        error.message ||
+          "Unable to submit scores"
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <main className="page">
+
+      <div className="page-container">
+
+        <div className="page-header">
+
+          <div>
+
+            <p className="page-eyebrow">
+              Judge
+            </p>
+
+            <h1 className="page-title">
+              Judging Dashboard
+            </h1>
+
+            <p className="page-description">
+              Review your assigned hackathon
+              submissions.
+            </p>
+
+          </div>
+
+          <button
+            className="refresh-button"
+            onClick={loadData}
+          >
+            Refresh
+          </button>
+
+        </div>
+
+        <div className="stats-grid">
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Assignments
+            </div>
+
+            <div className="stat-value">
+              {loading
+                ? "—"
+                : assignments.length}
+            </div>
+
+          </div>
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Criteria
+            </div>
+
+            <div className="stat-value">
+              {loading
+                ? "—"
+                : rubric?.criteria
+                    ?.length || 0}
+            </div>
+
+          </div>
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Status
+            </div>
+
+            <div className="stat-value">
+              Active
+            </div>
+
+          </div>
+
+        </div>
+
+        {message && (
+          <div
+            className="content-card"
+            style={{
+              marginBottom: "20px",
+            }}
+          >
+            <strong>
+              {message}
+            </strong>
+          </div>
+        )}
+
+        <div className="judge-layout">
+
+          <div className="judge-card">
+
+            <h2>
+              Assignment
+            </h2>
+
+            {assignments.length === 0 ? (
+              <p>
+                No assignments found.
+              </p>
+            ) : (
+              assignments.map(
+                (assignment) => (
+                  <div
+                    key={assignment.id}
+                    style={{
+                      padding: "14px 0",
+                      borderBottom:
+                        "1px solid #edf0f4",
+                    }}
+                  >
+
+                    <strong>
+                      Event #
+                      {assignment.event_id}
+                    </strong>
+
+                    <div
+                      style={{
+                        marginTop: "5px",
+                        color: "#64748b",
+                        fontSize: "13px",
+                      }}
+                    >
+                      Status:{" "}
+                      {assignment.status}
+                    </div>
+
+                  </div>
+                )
+              )
+            )}
+
+          </div>
+
+          <div className="judge-card">
+
+            <h2>
+              {rubric?.name ||
+                "Judging Rubric"}
+            </h2>
+
+            {rubric?.description && (
+              <p>
+                {rubric.description}
+              </p>
+            )}
+
+            <form
+              onSubmit={submitScores}
+            >
+
+              {rubric?.criteria?.map(
+                (criterion) => (
+                  <div
+                    className="criterion-row"
+                    key={criterion.id}
+                  >
+
+                    <div>
+
+                      <div className="criterion-name">
+                        {criterion.name}
+                      </div>
+
+                      {criterion.description && (
+                        <div className="criterion-description">
+                          {
+                            criterion.description
+                          }
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          marginTop: "5px",
+                          color: "#94a3b8",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Weight:{" "}
+                        {criterion.weight}%
+                        {" · "}
+                        Max:{" "}
+                        {criterion.max_score}
+                      </div>
+
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection:
+                          "column",
+                        gap: "10px",
+                      }}
+                    >
+
+                      <input
+                        className="score-input"
+                        type="number"
+                        min="0"
+                        max={
+                          criterion.max_score
+                        }
+                        step="0.1"
+                        placeholder="Score"
+                        value={
+                          scores[
+                            criterion.id
+                          ] || ""
+                        }
+                        onChange={(e) =>
+                          updateScore(
+                            criterion.id,
+                            e.target.value
+                          )
+                        }
+                      />
+
+                      <textarea
+                        className="criterion-comment"
+                        placeholder="Optional comment"
+                        value={
+                          comments[
+                            criterion.id
+                          ] || ""
+                        }
+                        onChange={(e) =>
+                          updateComment(
+                            criterion.id,
+                            e.target.value
+                          )
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+                )
+              )}
+
+              {rubric?.criteria?.length >
+                0 && (
+                <div
+                  style={{
+                    marginTop: "20px",
+                  }}
+                >
+
+                  <button
+                    className="primary-button"
+                    type="submit"
+                    disabled={submitting}
+                  >
+                    {submitting
+                      ? "Submitting..."
+                      : "Submit Scores"}
+                  </button>
+
+                </div>
+              )}
+
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+  )
+}
+
+/* =========================================================
+   ORGANIZER DASHBOARD
+========================================================= */
+
+function OrganizerDashboard() {
+  const [leaderboard, setLeaderboard] =
+    useState([])
+
+  const [loading, setLoading] =
+    useState(false)
+
+  const [message, setMessage] =
+    useState("")
+
+  async function loadLeaderboard() {
+    setLoading(true)
+    setMessage("")
 
     try {
       const response = await fetch(
         `${API}/judging/leaderboard/1`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: authHeaders(),
         }
-      );
+      )
 
-      const data = await response.json();
+      const data =
+        await response.json()
 
-      setLeaderboard(Array.isArray(data) ? data : []);
+      if (!response.ok) {
+        throw new Error(
+          data.detail ||
+            "Unable to load leaderboard"
+        )
+      }
+
+      setLeaderboard(
+        Array.isArray(data)
+          ? data
+          : []
+      )
     } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLeaderboard([])
 
-  const downloadCSV = async () => {
+      setMessage(
+        error.message ||
+          "Unable to load leaderboard"
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function downloadCSV() {
     try {
       const response = await fetch(
         `${API}/judging/leaderboard/1/csv`,
         {
-          method: "GET",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${getToken()}`,
           },
         }
-      );
+      )
 
       if (!response.ok) {
-        throw new Error("CSV download failed");
+        throw new Error(
+          "CSV download failed"
+        )
       }
 
-      const blob = await response.blob();
+      const blob =
+        await response.blob()
 
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const url =
+        window.URL.createObjectURL(
+          blob
+        )
 
-      a.href = url;
-      a.download = "event_1_leaderboard.csv";
+      const link =
+        document.createElement("a")
 
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      link.href = url
 
-      window.URL.revokeObjectURL(url);
+      link.download =
+        "event_1_leaderboard.csv"
+
+      document.body.appendChild(link)
+
+      link.click()
+
+      link.remove()
+
+      window.URL.revokeObjectURL(url)
     } catch (error) {
-      alert("CSV download failed.");
+      setMessage(
+        error.message ||
+          "CSV download failed"
+      )
     }
-  };
+  }
+
+  useEffect(() => {
+    loadLeaderboard()
+  }, [])
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div>
-          <p className="eyebrow">ORGANIZER</p>
-          <h1>Hackathon overview</h1>
-          <p className="muted">
-            Manage judging and review final results.
-          </p>
-        </div>
+    <main className="page">
 
-        <div className="header-actions">
-          <button
-            className="secondary-button"
-            onClick={loadLeaderboard}
-          >
-            {loading ? "Loading..." : "Refresh leaderboard"}
-          </button>
+      <div className="page-container">
 
-          <button
-            className="primary-button"
-            onClick={downloadCSV}
-          >
-            Download CSV
-          </button>
-        </div>
-      </div>
+        <div className="page-header">
 
-      <div className="overview-card">
-        <div>
-          <span>Event</span>
-          <strong>Hackathon 2026</strong>
-        </div>
-
-        <div>
-          <span>Submissions scored</span>
-          <strong>{leaderboard.length}</strong>
-        </div>
-
-        <div>
-          <span>Status</span>
-          <strong className="status-badge">Judging active</strong>
-        </div>
-      </div>
-
-      <div className="content-card">
-        <div className="card-header">
           <div>
-            <p className="eyebrow">RESULTS</p>
-            <h2>Leaderboard</h2>
+
+            <p className="page-eyebrow">
+              Organizer
+            </p>
+
+            <h1 className="page-title">
+              Organizer Dashboard
+            </h1>
+
+            <p className="page-description">
+              Monitor Hackathon 2026
+              judging and results.
+            </p>
+
           </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+            }}
+          >
+
+            <button
+              className="refresh-button"
+              onClick={loadLeaderboard}
+            >
+              Refresh leaderboard
+            </button>
+
+            <button
+              className="primary-button"
+              onClick={downloadCSV}
+            >
+              Export CSV
+            </button>
+
+          </div>
+
         </div>
 
-        {leaderboard.length === 0 ? (
-          <div className="empty-card">
-            Click <strong>Refresh leaderboard</strong> to load results.
+        <div className="stats-grid">
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Event
+            </div>
+
+            <div
+              className="stat-value"
+              style={{
+                fontSize: "21px",
+              }}
+            >
+              Hackathon 2026
+            </div>
+
           </div>
-        ) : (
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Project</th>
-                  <th>Team</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
 
-              <tbody>
-                {leaderboard.map((item, index) => (
-                  <tr key={item.submission_id || index}>
-                    <td>
-                      <strong>
-                        {item.rank || index + 1}
-                      </strong>
-                    </td>
+          <div className="stat-card">
 
-                    <td>
-                      {item.project_name ||
-                        item.submission_id}
-                    </td>
+            <div className="stat-label">
+              Submissions scored
+            </div>
 
-                    <td>
-                      {item.team_name || "-"}
-                    </td>
+            <div className="stat-value">
+              {leaderboard.length}
+            </div>
 
-                    <td>
-                      <strong>
-                        {Number(
-                          item.final_score ?? item.score ?? 0
-                        ).toFixed(2)}
-                      </strong>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          </div>
+
+          <div className="stat-card">
+
+            <div className="stat-label">
+              Status
+            </div>
+
+            <div className="stat-value">
+              Judging active
+            </div>
+
+          </div>
+
+        </div>
+
+        {message && (
+          <div
+            className="content-card"
+            style={{
+              marginBottom: "20px",
+            }}
+          >
+            <strong>
+              {message}
+            </strong>
           </div>
         )}
+
+        <div className="content-card">
+
+          <h2>
+            Leaderboard
+          </h2>
+
+          {loading ? (
+            <p>
+              Loading leaderboard...
+            </p>
+          ) : leaderboard.length === 0 ? (
+            <p>
+              No scored submissions yet.
+              Click{" "}
+              <strong>
+                Refresh leaderboard
+              </strong>{" "}
+              after judges submit scores.
+            </p>
+          ) : (
+            <div
+              className="table-wrapper"
+              style={{
+                marginTop: "18px",
+              }}
+            >
+
+              <table className="data-table">
+
+                <thead>
+
+                  <tr>
+                    <th>Rank</th>
+                    <th>Submission</th>
+                    <th>Project</th>
+                    <th>Score</th>
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  {leaderboard.map(
+                    (item, index) => (
+                      <tr
+                        key={
+                          item.submission_id ||
+                          item.id ||
+                          index
+                        }
+                      >
+
+                        <td>
+                          {item.rank ||
+                            index + 1}
+                        </td>
+
+                        <td>
+                          #{item.submission_id}
+                        </td>
+
+                        <td>
+                          {item.project_name ||
+                            `Submission #${item.submission_id}`}
+                        </td>
+
+                        <td>
+                          <strong>
+                            {Number(
+                              item.final_score ||
+                                0
+                            ).toFixed(2)}
+                          </strong>
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+          )}
+
+        </div>
+
       </div>
-    </div>
-  );
+
+    </main>
+  )
 }
 
+/* =========================================================
+   MAIN APP
+========================================================= */
+
 function App() {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
+  const [user, setUser] =
+    useState(() => {
+      const savedUser =
+        localStorage.getItem("user")
 
-    try {
-      return savedUser ? JSON.parse(savedUser) : null;
-    } catch {
-      return null;
-    }
-  });
+      if (!savedUser) {
+        return null
+      }
 
-  const [token, setToken] = useState(
-    () => localStorage.getItem("token") || ""
-  );
+      try {
+        return JSON.parse(savedUser)
+      } catch {
+        return null
+      }
+    })
 
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] =
+    useState("dashboard")
 
-  const handleLogin = (data) => {
+  function handleLogin(data) {
     setUser({
-      user_id: data.user_id,
+      id: data.user_id,
       name: data.name,
       email: data.email,
       role: data.role,
-    });
+    })
 
-    setToken(data.access_token);
-    setPage("dashboard");
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    setToken("");
-    setUser(null);
-    setPage("dashboard");
-  };
-
-  if (!user || !token) {
-    return <Login onLogin={handleLogin} />;
+    setPage("dashboard")
   }
 
-  let dashboard = null;
+  function handleLogout() {
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    setUser(null)
+  }
 
-  if (user.role === "judge") {
-    dashboard = <JudgeDashboard token={token} />;
-  } else if (user.role === "organizer" || user.role === "admin") {
-    dashboard = <OrganizerDashboard token={token} />;
-  } else {
-    dashboard = <ParticipantDashboard token={token} />;
+  if (!user) {
+    return (
+      <Login
+        onLogin={handleLogin}
+      />
+    )
   }
 
   return (
-    <div className="app">
+    <>
       <Navbar
         user={user}
         page={page}
@@ -798,15 +1739,39 @@ function App() {
         onLogout={handleLogout}
       />
 
-      <main>
-        {page === "gallery" ? (
-          <PublicGallery />
-        ) : (
-          dashboard
-        )}
-      </main>
-    </div>
-  );
+      {page === "gallery" ? (
+        <PublicGallery />
+      ) : user.role === "participant" ? (
+        <ParticipantDashboard />
+      ) : user.role === "judge" ? (
+        <JudgeDashboard />
+      ) : user.role === "organizer" ||
+        user.role === "admin" ? (
+        <OrganizerDashboard />
+      ) : (
+        <main className="page">
+
+          <div className="page-container">
+
+            <div className="content-card">
+
+              <h2>
+                Dashboard
+              </h2>
+
+              <p>
+                Your role does not have a
+                dashboard yet.
+              </p>
+
+            </div>
+
+          </div>
+
+        </main>
+      )}
+    </>
+  )
 }
 
-export default App;
+export default App
