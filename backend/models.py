@@ -122,4 +122,9 @@ class JudgeScore(Base):
 
 
 class SubmissionScore(Base):
-    __tablename__ = "submission_scores
+    __tablename__ = "submission_scores"
+
+    id = Column(Integer, primary_key=True, index=True)
+    submission_id = Column(Integer, ForeignKey("submissions.id"), nullable=False)
+    final_score = Column(Float, nullable=False)
+    rank = Column(Integer, nullable=True)

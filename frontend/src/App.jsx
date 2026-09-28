@@ -1,88 +1,18 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
-const API = "http://127.0.0.1:8000"
-
-function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"))
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user") || "null")
-  )
-
-  const handleLogin = (data) => {
-    localStorage.setItem("token", data.access_token)
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        user_id: data.user_id,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-      })
-    )
-
-    setToken(data.access_token)
-    setUser({
-      user_id: data.user_id,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-    })
-  }
-
-  const logout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    setToken(null)
-    setUser(null)
-  }
-
-  if (!token || !user) {
-    return <Login onLogin={handleLogin} />
-  }
-
-  if (user.role === "judge") {
-    return (
-      <JudgeDashboard
-        token={token}
-        user={user}
-        onLogout={logout}
-      />
-    )
-  }
-
-  if (user.role === "organizer" || user.role === "admin") {
-    return (
-      <OrganizerDashboard
-        token={token}
-        user={user}
-        onLogout={logout}
-      />
-    )
-  }
-
-  return (
-    <ParticipantDashboard
-      user={user}
-      onLogout={logout}
-    />
-  )
-}
-
-/* =========================
-   LOGIN
-========================= */
+const API = "http://127.0.0.1:8000";
 
 function Login({ onLogin }) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const submitLogin = async (e) => {
-    e.preventDefault()
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    setLoading(true)
-    setError("")
+    setLoading(true);
+    setError("");
 
     try {
       const response = await fetch(`${API}/auth/login`, {
@@ -94,527 +24,559 @@ function Login({ onLogin }) {
           email,
           password,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || "Login failed")
+        setError(data.error || "Login failed");
+        return;
       }
 
-      onLogin(data)
-    } catch (error) {
-      setError(error.message || "Backend connect aagala.")
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          user_id: data.user_id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+        })
+      );
+
+      onLogin(data);
+    } catch (err) {
+      setError("Cannot connect to backend.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
-      <div className="login-left">
-        <div className="brand-block">
+      <div className="login-card">
+        <div className="brand">
           <div className="brand-mark">D</div>
-
           <div>
-            <h1>DOGFOOD</h1>
-            <span>2026</span>
+            <h1>Dogfood 2026</h1>
+            <p>Hackathon Management Platform</p>
           </div>
         </div>
 
-        <div className="login-hero">
-          <p className="eyebrow">HACKATHON PLATFORM</p>
+        <h2>Welcome back</h2>
+        <p className="muted">Sign in to continue to your dashboard.</p>
 
-          <h2>
-            Build.
-            <br />
-            Submit.
-            <br />
-            Get judged.
-          </h2>
-
-          <p>
-            A self-hosted hackathon management platform for
-            organizers, participants and judges.
-          </p>
-        </div>
-      </div>
-
-      <div className="login-right">
-        <form className="login-card" onSubmit={submitLogin}>
-          <p className="eyebrow">WELCOME BACK</p>
-
-          <h2>Sign in</h2>
-
-          <p className="login-description">
-            Access your Dogfood 2026 workspace.
-          </p>
-
+        <form onSubmit={handleLogin}>
           <label>Email</label>
-
           <input
             type="email"
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
             required
           />
 
           <label>Password</label>
-
           <input
             type="password"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
             required
           />
 
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+          {error && <div className="error-box">{error}</div>}
 
-          <button
-            className="primary-button login-button"
-            type="submit"
-            disabled={loading}
-          >
+          <button className="primary-button" type="submit" disabled={loading}>
             {loading ? "Signing in..." : "Sign in"}
           </button>
-
-          <div className="demo-accounts">
-            <strong>Demo accounts</strong>
-
-            <div>
-              Organizer: user@example.com
-            </div>
-
-            <div>
-              Judge: judge@example.com
-            </div>
-
-            <div>
-              Password: string
-            </div>
-          </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-/* =========================
-   NAVBAR
-========================= */
-
-function Navbar({ title, user, onLogout }) {
+function Navbar({ user, page, setPage, onLogout }) {
   return (
-    <header className="topbar">
-      <div className="topbar-brand">
+    <nav className="navbar">
+      <div className="nav-brand">
         <div className="brand-mark small">D</div>
-
-        <div>
-          <div className="brand-name">DOGFOOD</div>
-          <div className="brand-year">2026</div>
-        </div>
+        <span>Dogfood 2026</span>
       </div>
 
-      <div className="topbar-title">
-        {title}
-      </div>
-
-      <div className="topbar-user">
-        <div className="avatar">
-          {(user?.name || "U").charAt(0).toUpperCase()}
-        </div>
-
-        <div className="user-info">
-          <strong>{user?.name}</strong>
-          <span>{user?.role}</span>
-        </div>
+      <div className="nav-links">
+        <button
+          className={page === "dashboard" ? "nav-link active" : "nav-link"}
+          onClick={() => setPage("dashboard")}
+        >
+          Dashboard
+        </button>
 
         <button
-          className="logout-button"
-          onClick={onLogout}
+          className={page === "gallery" ? "nav-link active" : "nav-link"}
+          onClick={() => setPage("gallery")}
         >
+          Public Gallery
+        </button>
+      </div>
+
+      <div className="nav-user">
+        <div>
+          <strong>{user.name}</strong>
+          <span>{user.role}</span>
+        </div>
+
+        <button className="logout-button" onClick={onLogout}>
           Logout
         </button>
       </div>
-    </header>
-  )
+    </nav>
+  );
 }
 
-/* =========================
-   JUDGE DASHBOARD
-========================= */
+function PublicGallery() {
+  const [projects, setProjects] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-function JudgeDashboard({ token, user, onLogout }) {
-  const [assignments, setAssignments] = useState([])
-  const [rubric, setRubric] = useState(null)
-  const [scores, setScores] = useState({})
-  const [overallComment, setOverallComment] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState("")
-  const [error, setError] = useState("")
-
-  const submissionId = 1
-
-  const loadAssignments = async () => {
-    setLoading(true)
-    setError("")
-    setMessage("")
+  const loadGallery = async () => {
+    setLoading(true);
+    setError("");
 
     try {
-      const assignmentResponse = await fetch(
-        `${API}/judging/assignments/my`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const response = await fetch(`${API}/gallery/`);
 
-      if (!assignmentResponse.ok) {
-        throw new Error("Unable to load assignments")
+      if (!response.ok) {
+        throw new Error("Failed to load gallery");
       }
 
-      const assignmentData = await assignmentResponse.json()
+      const data = await response.json();
+      setProjects(data);
+    } catch (err) {
+      setError("Unable to load public gallery.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    loadGallery();
+  }, []);
+
+  const filteredProjects = projects.filter((project) => {
+    const text = `
+      ${project.project_name}
+      ${project.description}
+      ${project.team_name}
+      ${project.track_name}
+    `.toLowerCase();
+
+    return text.includes(search.toLowerCase());
+  });
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">PUBLIC</p>
+          <h1>Hackathon Gallery</h1>
+          <p className="muted">
+            Explore projects submitted to Hackathon 2026.
+          </p>
+        </div>
+
+        <button className="secondary-button" onClick={loadGallery}>
+          Refresh
+        </button>
+      </div>
+
+      <div className="gallery-search">
+        <input
+          type="text"
+          placeholder="Search projects, teams, tracks..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {loading && <div className="empty-card">Loading projects...</div>}
+
+      {error && <div className="error-box">{error}</div>}
+
+      {!loading && !error && filteredProjects.length === 0 && (
+        <div className="empty-card">
+          No projects found.
+        </div>
+      )}
+
+      {!loading && !error && filteredProjects.length > 0 && (
+        <div className="gallery-grid">
+          {filteredProjects.map((project) => (
+            <div className="project-card" key={project.submission_id}>
+              <div className="project-card-top">
+                <span className="track-badge">
+                  {project.track_name}
+                </span>
+
+                <span className="submission-id">
+                  #{project.submission_id}
+                </span>
+              </div>
+
+              <h2>{project.project_name}</h2>
+
+              <p className="project-description">
+                {project.description}
+              </p>
+
+              <div className="project-meta">
+                <div>
+                  <span>Team</span>
+                  <strong>{project.team_name}</strong>
+                </div>
+
+                <div>
+                  <span>Track</span>
+                  <strong>{project.track_name}</strong>
+                </div>
+              </div>
+
+              <div className="project-actions">
+                {project.repository_url && (
+                  <a
+                    href={project.repository_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="secondary-button"
+                  >
+                    Repository ↗
+                  </a>
+                )}
+
+                {project.demo_url && (
+                  <a
+                    href={project.demo_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="primary-button link-button"
+                  >
+                    Live Demo ↗
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ParticipantDashboard({ token }) {
+  const [teams, setTeams] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = async () => {
+    setLoading(true);
+
+    try {
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const [teamsResponse, submissionsResponse] = await Promise.all([
+        fetch(`${API}/teams/my`, { headers }),
+        fetch(`${API}/submissions/my`, { headers }),
+      ]);
+
+      const teamsData = await teamsResponse.json();
+      const submissionsData = await submissionsResponse.json();
+
+      setTeams(Array.isArray(teamsData) ? teamsData : []);
+      setSubmissions(
+        Array.isArray(submissionsData) ? submissionsData : []
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const currentTeam = teams.length > 0 ? teams[0] : null;
+  const currentSubmission =
+    submissions.length > 0 ? submissions[0] : null;
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">PARTICIPANT</p>
+          <h1>Hackathon Dashboard</h1>
+          <p className="muted">
+            Manage your team and submissions.
+          </p>
+        </div>
+
+        <button className="secondary-button" onClick={loadData}>
+          Refresh
+        </button>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat-card">
+          <span>Teams</span>
+          <strong>{loading ? "..." : teams.length}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Submissions</span>
+          <strong>{loading ? "..." : submissions.length}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Event</span>
+          <strong>Hackathon 2026</strong>
+        </div>
+      </div>
+
+      <div className="dashboard-grid">
+        <div className="content-card">
+          <div className="card-header">
+            <div>
+              <p className="eyebrow">TEAM</p>
+              <h2>Current Team</h2>
+            </div>
+          </div>
+
+          {currentTeam ? (
+            <div className="detail-block">
+              <h3>{currentTeam.name}</h3>
+              <p>
+                Team ID: <strong>#{currentTeam.id}</strong>
+              </p>
+            </div>
+          ) : (
+            <div className="empty-card">
+              You are not part of a team yet.
+            </div>
+          )}
+        </div>
+
+        <div className="content-card">
+          <div className="card-header">
+            <div>
+              <p className="eyebrow">SUBMISSION</p>
+              <h2>Current Submission</h2>
+            </div>
+          </div>
+
+          {currentSubmission ? (
+            <div className="detail-block">
+              <h3>{currentSubmission.project_name}</h3>
+              <p>{currentSubmission.description}</p>
+
+              <span className="status-badge">
+                {currentSubmission.status || "submitted"}
+              </span>
+            </div>
+          ) : (
+            <div className="empty-card">
+              No submission found.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function JudgeDashboard({ token }) {
+  const [assignments, setAssignments] = useState([]);
+  const [rubric, setRubric] = useState(null);
+  const [scores, setScores] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  const loadData = async () => {
+    setLoading(true);
+
+    try {
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      const assignmentsResponse = await fetch(
+        `${API}/judging/assignments/my`,
+        { headers }
+      );
+
+      const assignmentsData = await assignmentsResponse.json();
       setAssignments(
-        Array.isArray(assignmentData)
-          ? assignmentData
-          : assignmentData.assignments || []
-      )
+        Array.isArray(assignmentsData) ? assignmentsData : []
+      );
 
       const rubricResponse = await fetch(
         `${API}/judging/rubrics/1`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+        { headers }
+      );
 
-      if (!rubricResponse.ok) {
-        throw new Error("Unable to load rubric")
-      }
-
-      const rubricData = await rubricResponse.json()
-
-      setRubric(rubricData)
-
-      const criteria =
-        rubricData.criteria ||
-        rubricData.criterions ||
-        []
-
-      const initialScores = {}
-
-      criteria.forEach((criterion) => {
-        initialScores[criterion.id] = ""
-      })
-
-      setScores(initialScores)
+      const rubricData = await rubricResponse.json();
+      setRubric(rubricData);
     } catch (error) {
-      setError(error.message)
+      console.error(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const updateScore = (criterionId, value) => {
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleScoreChange = (criterionId, value) => {
     setScores((previous) => ({
       ...previous,
       [criterionId]: value,
-    }))
-  }
+    }));
+  };
 
   const submitScores = async () => {
-    setLoading(true)
-    setError("")
-    setMessage("")
+    setMessage("");
 
     try {
-      const criteria =
-        rubric?.criteria ||
-        rubric?.criterions ||
-        []
+      const criteria = rubric?.criteria || [];
 
       for (const criterion of criteria) {
-        const scoreValue = Number(scores[criterion.id])
+        const value = Number(scores[criterion.id]);
 
-        if (
-          Number.isNaN(scoreValue) ||
-          scores[criterion.id] === ""
-        ) {
-          throw new Error(
-            `Please enter score for ${criterion.name}`
-          )
+        if (Number.isNaN(value)) {
+          setMessage("Please enter all scores.");
+          return;
         }
 
-        const response = await fetch(
-          `${API}/judging/score`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              submission_id: submissionId,
-              criterion_id: criterion.id,
-              score: scoreValue,
-              comment: overallComment || null,
-            }),
-          }
-        )
+        const response = await fetch(`${API}/judging/score`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            submission_id: 1,
+            criterion_id: criterion.id,
+            score: value,
+            comment: "",
+          }),
+        });
 
         if (!response.ok) {
-          const data = await response.json().catch(() => null)
-
-          throw new Error(
-            data?.detail || "Score submission failed"
-          )
+          const data = await response.json();
+          throw new Error(data.detail || "Score submission failed");
         }
       }
 
-      setMessage("Scores submitted successfully ✓")
+      setMessage("Scores submitted successfully ✓");
     } catch (error) {
-      setError(error.message)
-    } finally {
-      setLoading(false)
+      setMessage(error.message || "Failed to submit scores.");
     }
-  }
-
-  const criteria =
-    rubric?.criteria ||
-    rubric?.criterions ||
-    []
+  };
 
   return (
-    <div className="app-shell">
-      <Navbar
-        title="Judge Dashboard"
-        user={user}
-        onLogout={onLogout}
-      />
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">JUDGE</p>
+          <h1>Judge Dashboard</h1>
+          <p className="muted">
+            Review your assigned hackathon submissions.
+          </p>
+        </div>
 
-      <main className="dashboard-page">
-        <section className="page-heading">
+        <button className="secondary-button" onClick={loadData}>
+          Refresh
+        </button>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat-card">
+          <span>Assignments</span>
+          <strong>{loading ? "..." : assignments.length}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Criteria</span>
+          <strong>{rubric?.criteria?.length || 0}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Event</span>
+          <strong>Hackathon 2026</strong>
+        </div>
+      </div>
+
+      <div className="content-card">
+        <div className="card-header">
           <div>
-            <p className="eyebrow">JUDGING</p>
-
-            <h1>Evaluate submissions</h1>
-
-            <p>
-              Review assigned projects and submit your scores.
-            </p>
+            <p className="eyebrow">SCORING</p>
+            <h2>AI Hackathon Project</h2>
           </div>
+        </div>
 
-          <button
-            className="secondary-button"
-            onClick={loadAssignments}
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Load assignments"}
-          </button>
-        </section>
+        {rubric?.criteria?.map((criterion) => (
+          <div className="criterion-row" key={criterion.id}>
+            <div>
+              <strong>{criterion.name}</strong>
+              <p>
+                Weight: {criterion.weight}% · Max: {criterion.max_score}
+              </p>
+            </div>
 
-        <section className="stats-grid">
-          <div className="stat-card">
-            <span>Assigned events</span>
-            <strong>{assignments.length}</strong>
+            <input
+              type="number"
+              min="0"
+              max={criterion.max_score}
+              step="0.1"
+              placeholder="Score"
+              value={scores[criterion.id] || ""}
+              onChange={(e) =>
+                handleScoreChange(criterion.id, e.target.value)
+              }
+            />
           </div>
-
-          <div className="stat-card">
-            <span>Current submission</span>
-            <strong>#{submissionId}</strong>
-          </div>
-
-          <div className="stat-card">
-            <span>Criteria</span>
-            <strong>{criteria.length}</strong>
-          </div>
-        </section>
+        ))}
 
         {message && (
-          <div className="success-message">
+          <div
+            className={
+              message.includes("successfully")
+                ? "success-box"
+                : "error-box"
+            }
+          >
             {message}
           </div>
         )}
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-
-        <section className="judge-grid">
-          <div className="panel">
-            <p className="eyebrow">SUBMISSION</p>
-
-            <h2>Project to evaluate</h2>
-
-            <label>Submission ID</label>
-
-            <input
-              value={submissionId}
-              readOnly
-            />
-
-            <div className="submission-card">
-              <div className="project-icon">
-                AI
-              </div>
-
-              <div>
-                <h3>AI Hackathon Project</h3>
-                <p>Team Alpha</p>
-              </div>
-            </div>
-
-            <div className="link-row">
-              <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-              >
-                Repository ↗
-              </a>
-
-              <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-              >
-                Demo ↗
-              </a>
-            </div>
-          </div>
-
-          <div className="panel">
-            <div className="panel-heading">
-              <div>
-                <p className="eyebrow">RUBRIC</p>
-
-                <h2>
-                  {rubric?.name || "Main Judging Rubric"}
-                </h2>
-              </div>
-
-              <span className="badge">
-                Weighted
-              </span>
-            </div>
-
-            {!rubric ? (
-              <div className="empty-state">
-                Click <strong>Load assignments</strong> to
-                load your judging rubric.
-              </div>
-            ) : (
-              <div className="criteria-list">
-                {criteria.map((criterion) => (
-                  <div
-                    className="criterion-card"
-                    key={criterion.id}
-                  >
-                    <div className="criterion-header">
-                      <div>
-                        <h3>{criterion.name}</h3>
-
-                        <p>
-                          {criterion.description ||
-                            "Evaluate this criterion."}
-                        </p>
-                      </div>
-
-                      <span>
-                        {criterion.weight}% weight
-                      </span>
-                    </div>
-
-                    <div className="score-row">
-                      <label>
-                        Score
-                      </label>
-
-                      <input
-                        type="number"
-                        min="0"
-                        max={
-                          criterion.max_score || 10
-                        }
-                        step="0.5"
-                        value={
-                          scores[criterion.id] ?? ""
-                        }
-                        onChange={(e) =>
-                          updateScore(
-                            criterion.id,
-                            e.target.value
-                          )
-                        }
-                        placeholder={`0-${criterion.max_score || 10}`}
-                      />
-                    </div>
-                  </div>
-                ))}
-
-                <div className="overall-comment">
-                  <label>
-                    Overall comments
-                  </label>
-
-                  <textarea
-                    value={overallComment}
-                    onChange={(e) =>
-                      setOverallComment(
-                        e.target.value
-                      )
-                    }
-                    placeholder="Add overall feedback for this submission..."
-                    rows="4"
-                  />
-                </div>
-
-                <button
-                  className="primary-button"
-                  onClick={submitScores}
-                  disabled={
-                    loading || criteria.length === 0
-                  }
-                >
-                  {loading
-                    ? "Submitting..."
-                    : "Submit Scores"}
-                </button>
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
+        <button className="primary-button" onClick={submitScores}>
+          Submit Scores
+        </button>
+      </div>
     </div>
-  )
+  );
 }
 
-/* =========================
-   ORGANIZER DASHBOARD
-========================= */
-
-function OrganizerDashboard({
-  token,
-  user,
-  onLogout,
-}) {
-  const [leaderboard, setLeaderboard] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [loaded, setLoaded] = useState(false)
+function OrganizerDashboard({ token }) {
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const loadLeaderboard = async () => {
-    setLoading(true)
-    setError("")
+    setLoading(true);
 
     try {
       const response = await fetch(
@@ -624,41 +586,20 @@ function OrganizerDashboard({
             Authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
+      const data = await response.json();
 
-        throw new Error(
-          data?.detail || "Unable to load leaderboard"
-        )
-      }
-
-      const data = await response.json()
-
-      setLeaderboard(
-        Array.isArray(data)
-          ? data
-          : data.leaderboard || []
-      )
-
-      setLoaded(true)
+      setLeaderboard(Array.isArray(data) ? data : []);
     } catch (error) {
-      setError(error.message)
+      console.error(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  /* FIXED CSV DOWNLOAD
-     window.open() cannot send Authorization header.
-     This fetches the CSV with the bearer token and
-     downloads it as a file.
-  */
   const downloadCSV = async () => {
     try {
-      setError("")
-
       const response = await fetch(
         `${API}/judging/leaderboard/1/csv`,
         {
@@ -667,297 +608,205 @@ function OrganizerDashboard({
             Authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null)
-
-        throw new Error(
-          data?.detail || "CSV download failed"
-        )
+        throw new Error("CSV download failed");
       }
 
-      const blob = await response.blob()
+      const blob = await response.blob();
 
-      const url = window.URL.createObjectURL(blob)
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
 
-      const a = document.createElement("a")
+      a.href = url;
+      a.download = "event_1_leaderboard.csv";
 
-      a.href = url
-      a.download = "event_1_leaderboard.csv"
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-      document.body.appendChild(a)
-
-      a.click()
-
-      a.remove()
-
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      setError(error.message)
+      alert("CSV download failed.");
     }
-  }
-
-  const getScore = (item) => {
-    return (
-      item.final_score ??
-      item.score ??
-      item.total_score ??
-      0
-    )
-  }
-
-  const getRank = (item, index) => {
-    return item.rank ?? index + 1
-  }
-
-  const getProjectName = (item) => {
-    return (
-      item.project_name ||
-      item.submission_name ||
-      item.name ||
-      `Submission #${item.submission_id || ""}`
-    )
-  }
-
-  const getTeamName = (item) => {
-    return (
-      item.team_name ||
-      item.team ||
-      "Team"
-    )
-  }
+  };
 
   return (
-    <div className="app-shell">
-      <Navbar
-        title="Organizer Dashboard"
-        user={user}
-        onLogout={onLogout}
-      />
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <p className="eyebrow">ORGANIZER</p>
+          <h1>Hackathon overview</h1>
+          <p className="muted">
+            Manage judging and review final results.
+          </p>
+        </div>
 
-      <main className="dashboard-page">
-        <section className="page-heading">
+        <div className="header-actions">
+          <button
+            className="secondary-button"
+            onClick={loadLeaderboard}
+          >
+            {loading ? "Loading..." : "Refresh leaderboard"}
+          </button>
+
+          <button
+            className="primary-button"
+            onClick={downloadCSV}
+          >
+            Download CSV
+          </button>
+        </div>
+      </div>
+
+      <div className="overview-card">
+        <div>
+          <span>Event</span>
+          <strong>Hackathon 2026</strong>
+        </div>
+
+        <div>
+          <span>Submissions scored</span>
+          <strong>{leaderboard.length}</strong>
+        </div>
+
+        <div>
+          <span>Status</span>
+          <strong className="status-badge">Judging active</strong>
+        </div>
+      </div>
+
+      <div className="content-card">
+        <div className="card-header">
           <div>
-            <p className="eyebrow">ORGANIZER</p>
-
-            <h1>Hackathon overview</h1>
-
-            <p>
-              Manage judging and review final results.
-            </p>
+            <p className="eyebrow">RESULTS</p>
+            <h2>Leaderboard</h2>
           </div>
+        </div>
 
-          <div className="button-row">
-            <button
-              className="secondary-button"
-              onClick={loadLeaderboard}
-              disabled={loading}
-            >
-              {loading
-                ? "Loading..."
-                : "Refresh leaderboard"}
-            </button>
-
-            <button
-              className="primary-button"
-              onClick={downloadCSV}
-            >
-              Download CSV
-            </button>
+        {leaderboard.length === 0 ? (
+          <div className="empty-card">
+            Click <strong>Refresh leaderboard</strong> to load results.
           </div>
-        </section>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Project</th>
+                  <th>Team</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
 
-        {error && (
-          <div className="error-message">
-            {error}
+              <tbody>
+                {leaderboard.map((item, index) => (
+                  <tr key={item.submission_id || index}>
+                    <td>
+                      <strong>
+                        {item.rank || index + 1}
+                      </strong>
+                    </td>
+
+                    <td>
+                      {item.project_name ||
+                        item.submission_id}
+                    </td>
+
+                    <td>
+                      {item.team_name || "-"}
+                    </td>
+
+                    <td>
+                      <strong>
+                        {Number(
+                          item.final_score ?? item.score ?? 0
+                        ).toFixed(2)}
+                      </strong>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-
-        <section className="stats-grid">
-          <div className="stat-card">
-            <span>Event</span>
-            <strong>Hackathon 2026</strong>
-          </div>
-
-          <div className="stat-card">
-            <span>Submissions scored</span>
-            <strong>{leaderboard.length}</strong>
-          </div>
-
-          <div className="stat-card">
-            <span>Status</span>
-            <strong className="status-active">
-              Judging active
-            </strong>
-          </div>
-        </section>
-
-        <section className="panel leaderboard-panel">
-          <p className="eyebrow">RESULTS</p>
-
-          <h2>Leaderboard</h2>
-
-          {!loaded ? (
-            <div className="empty-state">
-              Click{" "}
-              <strong>Refresh leaderboard</strong>{" "}
-              to load results.
-            </div>
-          ) : leaderboard.length === 0 ? (
-            <div className="empty-state">
-              No scored submissions yet.
-            </div>
-          ) : (
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Project</th>
-                    <th>Team</th>
-                    <th>Score</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {leaderboard.map(
-                    (item, index) => (
-                      <tr
-                        key={
-                          item.submission_id ||
-                          item.id ||
-                          index
-                        }
-                      >
-                        <td>
-                          <strong>
-                            #{getRank(item, index)}
-                          </strong>
-                        </td>
-
-                        <td>
-                          {getProjectName(item)}
-                        </td>
-
-                        <td>
-                          {getTeamName(item)}
-                        </td>
-
-                        <td>
-                          <strong>
-                            {Number(
-                              getScore(item)
-                            ).toFixed(2)}
-                          </strong>
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      </main>
+      </div>
     </div>
-  )
+  );
 }
 
-/* =========================
-   PARTICIPANT DASHBOARD
-========================= */
+function App() {
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
 
-function ParticipantDashboard({
-  user,
-  onLogout,
-}) {
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [token, setToken] = useState(
+    () => localStorage.getItem("token") || ""
+  );
+
+  const [page, setPage] = useState("dashboard");
+
+  const handleLogin = (data) => {
+    setUser({
+      user_id: data.user_id,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+    });
+
+    setToken(data.access_token);
+    setPage("dashboard");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    setToken("");
+    setUser(null);
+    setPage("dashboard");
+  };
+
+  if (!user || !token) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  let dashboard = null;
+
+  if (user.role === "judge") {
+    dashboard = <JudgeDashboard token={token} />;
+  } else if (user.role === "organizer" || user.role === "admin") {
+    dashboard = <OrganizerDashboard token={token} />;
+  } else {
+    dashboard = <ParticipantDashboard token={token} />;
+  }
+
   return (
-    <div className="app-shell">
+    <div className="app">
       <Navbar
-        title="Participant Dashboard"
         user={user}
-        onLogout={onLogout}
+        page={page}
+        setPage={setPage}
+        onLogout={handleLogout}
       />
 
-      <main className="dashboard-page">
-        <section className="page-heading">
-          <div>
-            <p className="eyebrow">
-              PARTICIPANT
-            </p>
-
-            <h1>Hackathon workspace</h1>
-
-            <p>
-              Manage your team and submission.
-            </p>
-          </div>
-        </section>
-
-        <section className="stats-grid">
-          <div className="stat-card">
-            <span>Event</span>
-            <strong>Hackathon 2026</strong>
-          </div>
-
-          <div className="stat-card">
-            <span>Team</span>
-            <strong>Team Alpha</strong>
-          </div>
-
-          <div className="stat-card">
-            <span>Submission</span>
-            <strong>Submitted</strong>
-          </div>
-        </section>
-
-        <section className="participant-grid">
-          <div className="panel">
-            <p className="eyebrow">TEAM</p>
-
-            <h2>Team Alpha</h2>
-
-            <p>
-              Your hackathon team and members.
-            </p>
-
-            <div className="submission-card">
-              <div className="project-icon">
-                A
-              </div>
-
-              <div>
-                <h3>Team Alpha</h3>
-                <p>
-                  Active team
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="panel">
-            <p className="eyebrow">
-              SUBMISSION
-            </p>
-
-            <h2>
-              AI Hackathon Project
-            </h2>
-
-            <p>
-              Your project has been submitted
-              successfully.
-            </p>
-
-            <div className="status-pill">
-              Submitted
-            </div>
-          </div>
-        </section>
+      <main>
+        {page === "gallery" ? (
+          <PublicGallery />
+        ) : (
+          dashboard
+        )}
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
