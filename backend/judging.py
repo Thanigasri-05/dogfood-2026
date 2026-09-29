@@ -14,7 +14,15 @@ from models import (
     Track,
 )
 from auth import require_role, get_current_user
+import sys
+from pathlib import Path
 
+sys.path.insert(
+    0,
+    str(Path(__file__).resolve().parent.parent)
+)
+
+from judging_engine.services.normalization import normalize_scores
 import csv
 from io import StringIO
 
@@ -566,7 +574,14 @@ def submission_result(
 # LEADERBOARD
 # ORGANIZER / ADMIN ONLY
 # ============================================================
-
+def get_normalized_scores(
+    scores_by_judge,
+):
+    """
+    Normalize each judge's project-level scores
+    so judges with different scoring patterns can be compared.
+    """
+    return normalize_scores(scores_by_judge)
 @router.get("/leaderboard/{event_id}")
 def leaderboard(
     event_id: int,
