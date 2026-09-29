@@ -1,6 +1,21 @@
-node_modules
-dist
-dist-ssr
+# Dependencies & build
+node_modules/
+frontend/node_modules/
+dist/
+dist-ssr/
+frontend/dist/
+
+# Python
+backend/venv/
+backend/__pycache__/
+*.pyc
+__pycache__/
+
+# Environment & local files
 *.local
+.env
 .env.local
+
+# OS
 .DS_Store
+Thumbs.db
